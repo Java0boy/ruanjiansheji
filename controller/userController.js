@@ -134,7 +134,7 @@ module.exports = class extends baseController {
           if (isFind.data[0].password === params.oldPassword) {
             const isUpdateSuccess = await this.DBModule.User.updatePassword({ username: params.username, password: params.password })
             if (isUpdateSuccess.status === 'success') {
-              ctx.body = { status: 200, msg: '修改密码成功', data: isFind.data[0] }
+              ctx.body = { status: 200, msg: '修改密码成功' }
             } else {
               ctx.body = { status: 400, msg: '修改密码失败' }
             }
