@@ -1,28 +1,65 @@
 <template>
   <div>
     <div class="myChat">
+      <div class="userInfo" v-show="isUserInfo">
+        <div style="color: #2b7a78;font-size: 30px;flex: 1.3;margin-top: 30px">个人信息</div>
+        <div style="flex: 1;display: flex;flex-flow: revert">
+          <div>用户名</div>
+          <input style="height: 30px;margin-top: -5px;margin-left: 20px" type="text" name="RUsername" placeholder="用户名" onfocus="this.placeholder=''">
+        </div>
+        <div style="flex: 1;display: flex;flex-flow: revert">
+          <div><span style="color: white;pointer-events: none">密</span>密码</div>
+          <input style="height: 30px;margin-top: -5px;margin-left: 20px" type="password" name="RPassword" placeholder="密码" onfocus="this.placeholder=''">
+        </div>
+        <div style="flex: 1;display: flex;flex-flow: revert">
+          <div class="btn2" style="margin: 0" @click="isUserInfo = !isUserInfo">确定</div>
+        </div>
+      </div>
       <div class="topSide">
         <img :src="curHeadImg" alt="头像">
-        <p id="me">{{ curUsername }}</p>
-        <p>{{ onlineNum }} 在线</p>
-        <img :src="require('../../static/img/add.png')" @click="isAdd = !isAdd" class="addFriend">
+        <p id="me" style="color: white">{{ curUsername }}</p>
+        <p style="color: #def2f1">在线好友人数 【{{ onlineNum }}】</p>
+        <img :src="require('../../static/img/add.png')" @click="openBar()" class="addFriend" :style="{ transform : 'rotate(' + rotateDeg + 'deg)' }">
+        <div class="rightBar" :style="{display: isBar ? 'block' : 'none'}" >
+          <div class="rightBarInfo" @click="isUserInfo = !isUserInfo">个人信息</div>
+          <div style="margin-left:5%;width: 90%;height: 1px;background-color: white"></div>
+          <div class="rightBarInfo" @click="isAdd = !isAdd">添加好友</div>
+          <div style="margin-left:5%;width: 90%;height: 1px;background-color: white"></div>
+          <div class="rightBarInfo" @click="offLine">退出登录</div>
+        </div>
       </div>
-      <div class="leftSide">
+      <div class="leftSide" v-show="isMsg">
           <ul>
-            <li v-for="(friend,i) in friends" :key="i" :class="{'activeLi': i === nowChat}" @click="chatWith(i)">
+            <li v-for="(friend,i) in friends" :key="i" :class="{'activeLi': i === nowChat}" style="border-bottom: 1px solid white" @click="chatWith(i)">
+              <div id="redpoint" class="redPoint"></div>
               <img :src="require('../../static/img/favicon.png')" :alt="friend.username">
               <p>{{ friend.username }}</p>
             </li>
           </ul>
+      </div>
+      <div class="leftSide" v-show="!isMsg">
+        <ul>
+          <li v-for="(friend,i) in friendUnchecked" :key="i" style="border-bottom: 1px solid white">
+            <img :src="require('../../static/img/favicon.png')" :alt="friend.username">
+            <p style="width: 110px;text-overflow: clip">{{ friend.username }}</p>
+            <p class="checkBtn" @click="acceptFri(i)">√</p>
+            <div style="width: 5px"> </div>
+            <p class="checkBtn" @click="refuseFri(i)">×</p>
+          </li>
+        </ul>
+      </div>
+      <div class="leftSide3">
+        <div class="btn_msg" @click="isMsg = true;isBold1 = 'bold';isBold2 = 'normal'" :style="{ fontWeight : isBold1}">消息</div>
+        <div class="btn_fri" @click="isMsg = false;isBold2 = 'bold';isBold1 = 'normal'" :style="{ fontWeight : isBold2}">好友列表</div>
       </div>
       <div class="rightSide">
         <div id="chatPlace">
           <p class="nowChatName">{{ friends.length > 0 ? friends[nowChat].username : '' }}</p>
           <div v-for="(item, i) in newMsg" :key="i" v-show="item.from === friends[nowChat].username || item.to === friends[nowChat].username" class="msgBox">
             <div>
-              <p :style="{ float: item.from === curUsername ? 'right' : 'left'}">{{ item.date }}</p>
+              <p :style="{ float: item.from === curUsername ? 'right' : 'left'}" style="font-size: 12px">{{ item.date }}</p>
             </div>
-            <p :class="{'myMsg': item.from === curUsername, 'msg': true}" v-html="changeMsg(item.msg)"></p>
+            <p :class="{'myMsg': item.from === curUsername, 'msg': true}" v-html="changeMsg(item.msg)" style="font-size: 14px"></p>
           </div>
         </div>
         <div class="editBox">
@@ -47,24 +84,35 @@
           <!-- <textarea name="message" class="msgText" @keyup.enter="send" v-if="friends.length>0" v-model="friends[nowChat].textmsg"></textarea>
           <textarea name="message" class="msgText" @keyup.enter="send" v-model="textmsg" v-else></textarea> -->
         </div>
-        <div class="sendBtn" @click="send()">发送</div>
+        <div class="btn2" style="position: absolute;right: 10px;bottom: 10px" @click="send()">发送</div>
       </div>
     </div>
     <div class="add" :style="{display: isAdd ? 'block' : 'none'}">
       <label for="friendName">用户名：</label>
       <input type="text" v-model="friend">
-      <p  @click="addFriend">添加</p>
-      <p  @click="isAdd = !isAdd">关闭</p>
+      <p class="btn2" @click="addFriend">添加</p>
+      <p class="btn2" @click="isAdd = !isAdd">关闭</p>
     </div>
   </div>
 </template>
 <script>
 import EditPre from './EditDiv'
+import Push from 'push.js'
 export default {
   data () {
     return {
+      isUserInfo: false,
+      rotateDeg: 0,
+      isBar: false,
+      isMsg: true,
       isAdd: false,
+      isBold1: 'bold',
+      isBold2: 'normal',
       friend: '',
+      friendUnchecked: [{username: '朋友1'
+      }, {username: 'zxy17373031'
+      }, {username: '朋友3'}
+      ],
       curUsername: this.$store.state.username,
       curHeadImg: this.$store.state.headImg,
       friends: this.$store.state.friends,
@@ -74,7 +122,7 @@ export default {
       textmsg: '',
       newMsg: [],
       emojiShow: false,
-      emojiTotal: 68,
+      emojiTotal: 45,
       imgArr: []
     }
   },
@@ -82,6 +130,27 @@ export default {
     EditPre
   },
   methods: {
+    offLine () {
+      this.$store.commit('LOGIN_OUT')
+      this.$router.push('/login')
+    },
+    acceptFri (i) {
+      this.friendUnchecked.splice(i, 1)
+    },
+    refuseFri (i) {
+      this.friendUnchecked.splice(i, 1)
+    },
+    pushMessage (message, head) {
+      Push.create(head, {
+        body: message,
+        requireInteraction: true,
+        timeout: 600000
+      })
+    },
+    openBar () {
+      this.rotateDeg = this.isBar ? 0 : 45
+      this.isBar = !this.isBar
+    },
     chatWith (i) {
       this.nowChat = i
       this.$refs.editPre.setInnerText()
@@ -121,12 +190,14 @@ export default {
                   }
                 }
               }
+              // send发数据
               this.$socket.emit('receive', document.querySelector('.msgText pre').innerHTML, this.curUsername, this.friends[this.nowChat].username)
               this.friends[this.nowChat].textmsg = ''
               this.$refs.editPre.setInnerText()
             }
           })
         } else {
+          // send发数据
           this.$socket.emit('receive', document.querySelector('.msgText pre').innerHTML, this.curUsername, this.friends[this.nowChat].username)
           this.friends[this.nowChat].textmsg = ''
           this.$refs.editPre.setInnerText()
@@ -143,6 +214,7 @@ export default {
         if (res.data.status === 200) {
           this.$store.commit('updateFriends', res.data.data)
           this.friends = res.data.data
+          // send发数据
           this.$socket.emit('updateFriends', this.curUsername, this.friend)
         }
       }).catch(err => {
@@ -244,6 +316,7 @@ export default {
       }).then(res => {
         if (res.data.status === 200) {
           if (this.friends.length > 0) {
+            // send发数据
             this.$socket.emit('receive', '[file:' + res.data.data.pictureUrl + ']', this.curUsername, this.friends[this.nowChat].username)
           } else {
             alert('你还没有好友，先去加好友吧')
@@ -263,8 +336,13 @@ export default {
       this.onlineNum = num
     },
     newMsg: function (data) {
+      this.pushMessage(data.msg, '来自' + data.from + '的信息')
+
+      // console.log('newMsg')
+      // console.log(data)
       this.newMsg.push(data)
       this.friends[this.nowChat].textmsg = ''
+      document.title = '有新消息啦'
     },
     updateFriends: function (data) {
       this.friends.push({
@@ -280,6 +358,11 @@ export default {
   mounted () {
     this.getNewsList()
     this.emojiWrapperHide()
+    this.pushMessage('开始畅聊吧', '打开了IM')
+    window.onfocus = function () {
+      document.title = 'IM chat'
+    }
+    // document.title = '哈哈哈'
   },
   beforeRouteLeave (to, from, next) {
     this.$axios.post('/forceUpdateStatus', {
@@ -295,6 +378,78 @@ export default {
 }
 </script>
 <style>
+  .userInfo{
+    position: fixed;
+    width: 400px;
+    height: 300px;
+    background-color: white;
+    top: 50%;
+    left: 50%;
+    margin-left: -200px;
+    margin-top: -100px;
+    z-index: 1000;
+    border: 1px solid #2b7a78;
+    border-radius: 10px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-flow: column;
+  }
+  .redPoint{
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    background-color: red;
+    margin-left: 5px;
+    margin-top: -15px;
+  }
+  .btn2{
+    display: inline-block;
+    width: 60px;
+    height: 25px;
+    line-height: 25px;
+    border-radius: 3px;
+    align-items: center;
+    text-align: center;
+    margin-top: -20px;
+    background-color: #2b7a78;
+    color: white;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+  }
+  .btn2:hover{
+    background-color: #204846;
+  }
+  .btn2:active{
+    background-color: #3aafa9;
+  }
+  .rightBarInfo{
+    height: 59px;
+    line-height: 59px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .rightBar{
+    position: absolute;
+    right: 0;
+    width: 120px;
+    height: 180px;
+    background-color: #def2f1;
+    z-index: 1000;
+    top: 60px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+  }
+.checkBtn{
+  cursor: pointer;
+  font-weight: bold;
+  font-family: 微软雅黑;
+}
+.checkBtn:hover{
+  color: #2b7a78;
+}
 .connect{
   padding-left: 20px;
   padding-right: 20px;
@@ -307,18 +462,19 @@ export default {
   border-radius: 10px;
 }
 .myChat{
-  width: 700px;
-  height: 500px;
-  margin: 50px auto;
+  width: 800px;
+  height: 86vh;
+  margin: 7vh auto;
   background: white;
   border-radius: 5px;
+  box-shadow: 0px 0px 25px rgba(0, 0, 0, 0.1);
 }
 .topSide,.leftSide,.rightSide{
   float: left;
 }
 .topSide{
   width: 100%;
-  background: rgb(80, 129, 161);
+  background: #2b7a78;
   height: 60px;
   display: flex;
   flex-direction: row;
@@ -331,16 +487,43 @@ export default {
   border-radius: 100%;
 }
 .topSide p{
-  width: 100px;
+  width: 160px;
   overflow: hidden;
-  text-overflow: ellipsis;
+  /*text-overflow: ellipsis;*/
   white-space: nowrap;
 }
 .leftSide{
-  width: 150px;
-  height: calc(100% - 60px - 10px);
-  background: #f9fafa;
-  overflow-y: scroll;
+  margin-top: 40px;
+
+  width: 200px;
+  height: calc(86vh - 100px);
+  background: #def2f1;
+  /*overflow-y: scroll;*/
+}
+.leftSide2{
+  width: 200px;
+  height: calc(86vh - 100px);
+  margin-top: 100px;
+  background: #def2f1;
+  /*overflow-y: scroll;*/
+  /*position: absolute;*/
+  /*display: inline;*/
+}
+.leftSide3 div {
+  /*background-color: #71b0c9;*/
+  display: inline;
+  line-height: 40px;
+  margin-left: 30px;
+  margin-right: 10px;
+}
+.leftSide3{
+  color: #2b7a78;
+  width: 200px;
+  height: calc(40px);
+  margin-top: 60px;
+  background: #def2f1;
+  position: absolute;
+  border-bottom: 1px solid white;
 }
 .leftSide ul {
   padding: 0;
@@ -354,27 +537,30 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: center;
+  background: #def2f1;
 }
 .leftSide ul li:hover{
-  background: #dededf;
+  background: white;
 }
 .leftSide ul li img{
   height: 80%;
 }
 .activeLi{
-  background: #dededf;
+  background: white !important;
+
 }
 .rightSide{
-  width: calc(100% - 150px);
+  width: calc(100% - 200px);
   height: calc(100% - 60px);
   overflow-x: hidden;
   position: relative;
 }
 .rightSide #chatPlace{
   width: calc(100% + 20px);
-  height: calc(100% - 140px);
+  height: calc(100% - 210px);
   overflow-y: scroll;
   padding-right: 20px;
+  margin-top: 40px;
 }
 /* #chatPlace::-webkit-scrollbar {
     display: none;
@@ -417,7 +603,7 @@ export default {
 }
 .emojiWrapper{
   position: absolute;
-  top: -200px;
+  top: -120px;
   left: 0;
   z-index: 10;
   background: #dededf;
@@ -430,7 +616,7 @@ export default {
 }
 .rightSide .msgText{
   width: calc(100% - 10px);
-  height: 60px;
+  height: 100px;
 }
 .sendBtn{
   padding: 5px 10px;
@@ -447,14 +633,18 @@ img.addFriend{
   position: absolute;
   right: 10px;
   cursor: pointer;
+  transition: transform 0.5s ease;
+  /*transform: rotate(30deg);*/
 }
 .add{
   padding: 20px;
   position: absolute;
+  height: 50px;
+  line-height: 50px;
   left: 50%;
   top: 50%;
   transform: translate(-50%,-50%);
-  border: 1px solid rgb(181, 201, 211);
+  border: 1px solid #2b7a78;
   background: rgb(255, 255, 255);
   border-radius: 10px;
 }
@@ -467,17 +657,21 @@ img.addFriend{
   width: auto;
   border: 1px solid #71b0c9;
   padding: 5px;
-  font-size: 16px;
+  font-size: 14px;
   border-radius: 3px;
 }
-.add p{
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 3px;
-  background: #71b0c9;
-  color:white;
-  margin-right: 5px;
-  cursor: pointer;
+/*.add p{*/
+/*  display: inline-block;*/
+/*  padding: 5px 10px;*/
+/*  border-radius: 3px;*/
+/*  background: #71b0c9;*/
+/*  color:white;*/
+/*  margin-right: 5px;*/
+/*  cursor: pointer;*/
+/*}*/
+.msgBox{
+  margin-right: 25px;
+  margin-left: 15px;
 }
 .msgBox,.msgBox div{
   overflow: hidden;
@@ -493,9 +687,9 @@ img.addFriend{
   margin: 0;
 }
 .myMsg{
-  background: #71b0c9;
+  background: #def2f1;
   float: right;
-  color: white;
+  color: black;
 }
 .fileMsg{
   display: flex;
