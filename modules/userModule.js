@@ -6,7 +6,9 @@ module.exports = class {
       password: String,
       token: String,
       friends: Array,
-      status: Boolean
+      status: Boolean,
+      id: String,
+      img: String
     })
     // 创建模型,模型的实例叫做文档
     const User = mongoose.model('User', userSchema)
@@ -119,6 +121,45 @@ module.exports = class {
                 resolve({ status: 'success', msg: '添加成功', data: data[0].newsList })
               }
             })
+          }
+        })
+      })
+    }
+
+    // 修改用户名
+    // this.updateName = function (option) {
+    //   return new Promise((resolve, reject) => {
+    //     User.updateMany({ 'id': option.id }, {$set: {'username': option.username}}, function (err, data) {
+    //       if (err) {
+    //         reject(new Error({ status: 'failed', msg: '修改失败' }))
+    //       } else {
+    //         resolve({ status: 'success', msg: '修改成功' })
+    //       }
+    //     })
+    //   })
+    // }
+
+    // 修改密码
+    this.updatePassword = function (option) {
+      return new Promise((resolve, reject) => {
+        User.updateOne({ 'username': option.username }, {$set: {'password': option.password}}, function (err, data) {
+          if (err) {
+            reject(new Error({ status: 'failed', msg: '修改失败' }))
+          } else {
+            resolve({ status: 'success', msg: '修改成功' })
+          }
+        })
+      })
+    }
+
+    // 修改用户头像
+    this.updateImg = function (option) {
+      return new Promise((resolve, reject) => {
+        User.updateOne({ 'username': option.username }, {$set: {'img': option.img}}, function (err, data) {
+          if (err) {
+            reject(new Error({ status: 'failed', msg: '修改失败' }))
+          } else {
+            resolve({ status: 'success', msg: '修改成功' })
           }
         })
       })

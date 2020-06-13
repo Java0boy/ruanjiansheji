@@ -12,12 +12,21 @@ module.exports = class extends baseController {
       if (isFind.status === 'success' && isFind.data.length > 0) {
         ctx.body = { status: 401, msg: '该用户名已被使用', data: isFind.data }
       } else {
+        // 获取随机id
+        while (1) {
+          var uid = GetRandomNum(10000000, 99999999) + ''
+          const isUsed = await this.DBModule.User.findUser({ id: uid })
+          if (isUsed.status === 'failed' || isUsed.data.length === 0) { break }
+        }
+        var headImg = '<img src="' + `http://${ctx.host}/img/favicon.png` + '">'// 默认头像（可能需要修改）
         const userObj = {
+          id: uid,
           username: params.username,
           password: params.password,
           token: '123ds465sxsdfs', // 登录验证token
           friends: [], // 好友
-          status: false // 登录状态
+          status: false, // 登录状态
+          img: headImg
         }
         const result = await this.DBModule.User.saveUser(userObj)
         if (result.status === 'success') {
@@ -101,6 +110,51 @@ module.exports = class extends baseController {
       }
     }
 
+    // 修改用户名
+    // this.updateName = async (ctx, next) => {
+    //   const params = ctx.request.body
+    //   const isUpdateSuccess = await this.DBModule.User.updateName(params)
+    //   if (isUpdateSuccess) {
+    //     if (isUpdateSuccess.status === 'success') {
+    //       ctx.body = { status: 200, msg: '修改成功' }
+    //     } else {
+    //       ctx.body = { status: 400, msg: '修改失败' }
+    //     }
+    //   } else {
+    //     ctx.body = { status: 200 }
+    //   }
+    // }
+
+    // 修改密码
+    this.updatePassword = async (ctx, next) => {
+      const params = ctx.request.body
+      const isUpdateSuccess = await this.DBModule.User.updatePassword({username: params.username, password: params.password})
+      if (isUpdateSuccess) {
+        if (isUpdateSuccess.status === 'success') {
+          ctx.body = { status: 200, msg: '修改密码成功' }
+        } else {
+          ctx.body = { status: 400, msg: '修改密码失败' }
+        }
+      } else {
+        ctx.body = { status: 400 }
+      }
+    }
+
+    // 修改用户头像
+    this.updateImg = async (ctx, next) => {
+      const params = ctx.request.body
+      const isUpdateSuccess = await this.DBModule.User.updateImg({username: params.username, img: params.img})
+      if (isUpdateSuccess) {
+        if (isUpdateSuccess.status === 'success') {
+          ctx.body = { status: 200, msg: '修改头像成功' }
+        } else {
+          ctx.body = { status: 400, msg: '修改头像失败' }
+        }
+      } else {
+        ctx.body = { status: 400 }
+      }
+    }
+
     // 添加消息
     // this.addNewsList = async (ctx, next) => {
     //   const params = ctx.request.body
@@ -123,4 +177,10 @@ module.exports = class extends baseController {
     //   }
     // }
   }
+}
+
+function GetRandomNum (Min, Max) {
+  var Range = Max - Min
+  var Rand = Math.random()
+  return (Min + Math.round(Rand * Range))
 }
