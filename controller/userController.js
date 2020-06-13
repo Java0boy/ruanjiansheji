@@ -128,15 +128,24 @@ module.exports = class extends baseController {
     // 修改密码
     this.updatePassword = async (ctx, next) => {
       const params = ctx.request.body
-      const isUpdateSuccess = await this.DBModule.User.updatePassword({username: params.username, password: params.password})
-      if (isUpdateSuccess) {
-        if (isUpdateSuccess.status === 'success') {
-          ctx.body = { status: 200, msg: '修改密码成功' }
+      const isFind = await this.DBModule.User.findUser({ username: params.username })
+      if (isFind.status === 'success') {
+        if (isFind.data.length > 0) {
+          if (isFind.data[0].password === params.oldPassword) {
+            const isUpdateSuccess = await this.DBModule.User.updatePassword({ username: params.username, password: params.password })
+            if (isUpdateSuccess.status === 'success') {
+              ctx.body = { status: 200, msg: '修改密码成功', data: isFind.data[0] }
+            } else {
+              ctx.body = { status: 400, msg: '修改密码失败' }
+            }
+          } else {
+            ctx.body = { status: 401, msg: '旧密码输入错误' }
+          }
         } else {
-          ctx.body = { status: 400, msg: '修改密码失败' }
+          ctx.body = { status: 401, msg: '用户名不存在' }
         }
       } else {
-        ctx.body = { status: 400 }
+        ctx.body = { status: 400, msg: '服务器访问数据失败' }
       }
     }
 
