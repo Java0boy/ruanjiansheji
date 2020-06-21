@@ -82,6 +82,12 @@ io.on('connection', function (socket) {
       io.sockets.sockets[socketId].emit('updateFriends', username)
     }
   })
+  socket.on('updateApplications', function (username, application) {
+    let socketId = user[application]
+    if (socketId) {
+      io.sockets.sockets[socketId].emit('updateApplications', username)
+    }
+  })
   socket.on('forceOffLine', async function (username) {
     let socketId = user[username]
     if (socketId) {

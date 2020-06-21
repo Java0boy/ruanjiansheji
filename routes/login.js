@@ -1,3 +1,4 @@
+
 const UserController = require('../controller/userController')
 
 module.exports = function (koaRouter, options) {
@@ -11,4 +12,5 @@ module.exports = function (koaRouter, options) {
   koaRouter.post('/signUp', user.signUp) // 注册
   koaRouter.post('/signIn', user.signIn) // 登录
   koaRouter.post('/forceUpdateStatus', user.forceUpdateStatus)
+  koaRouter.post('/offline', user.offLine)
 }

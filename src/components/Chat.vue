@@ -5,23 +5,40 @@
         <div style="color: #2b7a78;font-size: 30px;flex: 1.3;margin-top: 30px">个人信息</div>
         <div style="flex: 1;display: flex;flex-flow: revert">
           <div>用户名</div>
-          <input style="height: 30px;margin-top: -5px;margin-left: 20px" type="text" name="RUsername" placeholder="用户名" onfocus="this.placeholder=''">
+          <div>{{ curUsername }}</div>
         </div>
         <div style="flex: 1;display: flex;flex-flow: revert">
-          <div><span style="color: white;pointer-events: none">密</span>密码</div>
-          <input style="height: 30px;margin-top: -5px;margin-left: 20px" type="password" name="RPassword" placeholder="密码" onfocus="this.placeholder=''">
+          <div>新头像</div>
+          <img :src="this.curHeadImg" alt="头像">
+          <div class="upLoadImg">
+            <img :src="require('../../static/img/picture.png')" alt="">
+            <input type="file" ref="upLoadImgBtn" @change="updateImg" accept="image/*" />
+          </div>
         </div>
         <div style="flex: 1;display: flex;flex-flow: revert">
-          <div class="btn2" style="margin: 0" @click="isUserInfo = !isUserInfo">确定</div>
+          <div><span style="color: white;pointer-events: none">密</span>旧密码</div>
+          <input style="height: 30px;margin-top: -5px;margin-left: 20px" type="password" v-model="oldPassword" placeholder="旧密码" onfocus="this.placeholder=''">
+        </div>
+        <div style="flex: 1;display: flex;flex-flow: revert">
+          <div><span style="color: white;pointer-events: none">密</span>新密码</div>
+          <input style="height: 30px;margin-top: -5px;margin-left: 20px" type="password" v-model="newPassword1" placeholder="新密码" onfocus="this.placeholder=''">
+        </div>
+        <div style="flex: 1;display: flex;flex-flow: revert">
+          <div><span style="color: white;pointer-events: none">密</span>再次输入新密码</div>
+          <input style="height: 30px;margin-top: -5px;margin-left: 20px" type="password" v-model="newPassword2" placeholder="新密码" onfocus="this.placeholder=''">
+        </div>
+        <div style="flex: 1;display: flex;flex-flow: revert">
+          <div class="btn2" style="margin: 0" @click="updateInformation">修改</div>
+          <div class="btn2" style="margin: 0" @click="isUserInfo = !isUserInfo">取消</div>
         </div>
       </div>
       <div class="topSide">
-        <img :src="curHeadImg" alt="头像">
+        <img :src="this.curHeadImg" alt="头像">
         <p id="me" style="color: white">{{ curUsername }}</p>
         <p style="color: #def2f1">在线好友人数 【{{ onlineNum }}】</p>
         <img :src="require('../../static/img/add.png')" @click="openBar()" class="addFriend" :style="{ transform : 'rotate(' + rotateDeg + 'deg)' }">
         <div class="rightBar" :style="{display: isBar ? 'block' : 'none'}" >
-          <div class="rightBarInfo" @click="isUserInfo = !isUserInfo">个人信息</div>
+          <div class="rightBarInfo" @click="isUserInfo = !isUserInfo">修改信息</div>
           <div style="margin-left:5%;width: 90%;height: 1px;background-color: white"></div>
           <div class="rightBarInfo" @click="isAdd = !isAdd">添加好友</div>
           <div style="margin-left:5%;width: 90%;height: 1px;background-color: white"></div>
@@ -39,12 +56,12 @@
       </div>
       <div class="leftSide" v-show="!isMsg">
         <ul>
-          <li v-for="(friend,i) in friendUnchecked" :key="i" style="border-bottom: 1px solid white">
+          <li v-for="(application,i) in applications" :key="i" style="border-bottom: 1px solid white">
             <img :src="require('../../static/img/favicon.png')" :alt="friend.username">
-            <p style="width: 110px;text-overflow: clip">{{ friend.username }}</p>
-            <p class="checkBtn" @click="acceptFri(i)">√</p>
+            <p style="width: 110px;text-overflow: clip">{{ application.username }}</p>
+            <p class="sendBtn" @click="accApplic()">√</p>
             <div style="width: 5px"> </div>
-            <p class="checkBtn" @click="refuseFri(i)">×</p>
+            <p class="sendBtn" @click="rejApplic()">×</p>
           </li>
         </ul>
       </div>
@@ -109,13 +126,11 @@ export default {
       isBold1: 'bold',
       isBold2: 'normal',
       friend: '',
-      friendUnchecked: [{username: '朋友1'
-      }, {username: 'zxy17373031'
-      }, {username: '朋友3'}
-      ],
+      application: '',
       curUsername: this.$store.state.username,
       curHeadImg: this.$store.state.headImg,
       friends: this.$store.state.friends,
+      applications: this.$store.state.applications,
       nowChat: 0,
       id: '',
       onlineNum: 0,
@@ -130,15 +145,95 @@ export default {
     EditPre
   },
   methods: {
+    updatePassword () {
+      // 检验密码是否一致
+      if (this.newPassword1 !== this.newPassword2) {
+        alert('两次密码输入不一致')
+      } else {
+        // 修改密码
+        this.$axios.post('/updatePassword', {
+          username: this.curUsername,
+          password: this.newPassword1
+        }).then(res => {
+          console.log(res)
+        }).catch(err => {
+          console.log(err)
+        })
+      }
+    },
+    updateImg () {
+      const file = this.$refs.upLoadImgBtn.files[0]
+      this.imgArr.push({'name': file.name, 'fileObj': file})
+      console.log(file)
+      console.log(this.imgArr)
+      // this.formData.append(file.name, file)
+      if (window.FileReader) {
+        let fileReader = new FileReader()
+        fileReader.onload = event => {
+          this.curHeadImg = `<img style="max-width: 200px" src="${event.target.result}" data-name="${file.name}" alt="[图片]">`
+        }
+        fileReader.readAsDataURL(file)
+      }
+      // 更新头像
+      this.$axios.post('/updateImg', {
+        username: this.curUsername,
+        img: this.newPassword1
+      }).then(res => {
+        console.log(res)
+      }).catch(err => {
+        console.log(err)
+      })
+    },
     offLine () {
-      this.$store.commit('LOGIN_OUT')
-      this.$router.push('/login')
+      this.$axios.post('/offLine', {
+        username: this.curUsername,
+        status: false
+      }).then(res => {
+        console.log(res)
+        // alert(res.data.msg)
+        if (res.data.status === 200) {
+          this.$socket.emit('forceOffLine', this.curUsername)
+          this.$router.push('/login')
+        }
+      }).catch(err => {
+        console.log(err)
+      })
     },
-    acceptFri (i) {
-      this.friendUnchecked.splice(i, 1)
+    accApplic () {
+      this.$axios.post('/accApplic', {
+        username: this.curUsername,
+        friend: this.application
+      }).then(res => {
+        if (res.data.status === 200) {
+          this.applications = res.data.data
+          this.$axios.post('/addFriend', {
+            username: this.curUsername,
+            friend: this.application
+          }).then(res => {
+            if (res.data.status === 200) {
+              this.$store.commit('updateFriends', res.data.data)
+              this.friends = res.data.data
+              this.$socket.emit('updateFriends', this.curUsername, this.application)
+            }
+          }).catch(err => {
+            console.log(err)
+          })
+        }
+      }).catch(err => {
+        console.log(err)
+      })
     },
-    refuseFri (i) {
-      this.friendUnchecked.splice(i, 1)
+    rejApplic () {
+      this.$axios.post('/rejApplic', {
+        username: this.curUsername,
+        friend: this.friend
+      }).then(res => {
+        if (res.data.status === 200) {
+          this.applications = res.data.data
+        }
+      }).catch(err => {
+        console.log(err)
+      })
     },
     pushMessage (message, head) {
       Push.create(head, {

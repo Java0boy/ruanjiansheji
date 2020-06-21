@@ -2,11 +2,13 @@ module.exports = class {
   constructor (mongoose) {
     const Schema = mongoose.Schema // 任何事情都是从Schema（模式）开始的。每一个模式映射到MongoDB集合,类似于表
     const userSchema = new Schema({
+      id: String,
       username: String,
       password: String,
       token: String,
       friends: Array,
-      status: Boolean
+      status: Boolean,
+      applications: Array
     })
     // 创建模型,模型的实例叫做文档
     const User = mongoose.model('User', userSchema)
@@ -19,7 +21,7 @@ module.exports = class {
           if (err) {
             reject(new Error({status: 'failed', msg: '注册失败，请重试', data: err}))
           } else {
-            resolve({status: 'success', msg: '注册成功，现在去登录吧', data: data})
+            resolve({status: 'success', msg: '注册成功，现在去登录吧' + userObj.id, data: data})
           }
         })
       })
@@ -37,7 +39,7 @@ module.exports = class {
       })
     }
 
-    // 更新用户状态，防止重复登录
+    // 更新用户状态，防止重复登录         **修改过**
     this.updateStatus = function (option) {
       if (option.username) {
         return new Promise((resolve, reject) => {
@@ -117,6 +119,46 @@ module.exports = class {
               } else {
                 console.log(data)
                 resolve({ status: 'success', msg: '添加成功', data: data[0].newsList })
+              }
+            })
+          }
+        })
+      })
+    }
+
+    // 申请记录
+    this.addApplic = function (option) {
+      return new Promise((resolve, reject) => {
+        User.updateMany({'username': option.to}, {$push: {'applications': option.from}}, function (err, data) {
+          if (err) {
+            reject(new Error({status: 'failed', msg: '查询失败', data: err}))
+          } else {
+            User.find({'username': option.to}, function (err, data) {
+              if (err) {
+                console.log(err)
+              } else {
+                console.log(data)
+                resolve({status: 'success', msg: '添加成功', data: data[0].applications})
+              }
+            })
+          }
+        })
+      })
+    }
+
+    // 删除申请记录
+    this.deleteApplic = function (option) {
+      return new Promise((resolve, reject) => {
+        User.updateMany({'username': option.username}, {$pull: {'applications': option.friend}}, function (err, data) {
+          if (err) {
+            reject(new Error({status: 'failed', msg: '查询失败', data: err}))
+          } else {
+            User.find({'username': option.username}, function (err, data) {
+              if (err) {
+                console.log(err)
+              } else {
+                console.log(data)
+                resolve({status: 'success', msg: '删除成功', data: data[0].applications})
               }
             })
           }

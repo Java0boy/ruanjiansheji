@@ -35,7 +35,7 @@
       </div>
     </div>
     <div class="repeatDialog" :style="{display: repeatdialog ? 'block' : 'none'}">
-      <div>该账号在另一地点登录，确定继续登录吗？</div>
+      <div>该账号已在另一地点登录，确定继续登录吗？</div>
       <div style="width: 100%;height: 50px"></div>
       <div class="btn" @click="forceOffLine" style="right: 130px;margin-top: -30px">确定</div>
       <div class="btn" @click="repeatdialog = !repeatdialog" style="margin-top: -30px">取消</div>
@@ -92,7 +92,8 @@ export default {
           // alert(res.data.msg)
           if (res.data.status === 200) {
             this.$store.commit('LOGIN_IN', res.data.data)
-            this.$socket.emit('signIn', this.LUsername)
+            this.$socket.emit('signIn', res.data.data.username)
+            //  修改前this.$socket.emit('signIn', this.LUsername)
             this.$router.push('/mychat')
           } else if (res.data.status === 'onLine') {
             this.repeatdialog = true
