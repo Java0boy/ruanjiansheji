@@ -73,6 +73,8 @@ export default {
           if (res.data.status === 200) {
             this.isLoginPage = !this.isLoginPage
             this.LUsername = this.RUsername
+          } else {
+            alert(res.data.msg)
           }
         })
       }
@@ -97,6 +99,8 @@ export default {
             this.$router.push('/mychat')
           } else if (res.data.status === 'onLine') {
             this.repeatdialog = true
+          } else {
+            alert(res.data.msg)
           }
         }).catch(err => {
           console.log(err)

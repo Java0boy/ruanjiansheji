@@ -3,6 +3,7 @@ module.exports = class {
     const Schema = mongoose.Schema // 任何事情都是从Schema（模式）开始的。每一个模式映射到MongoDB集合,类似于表
     const userSchema = new Schema({
       id: String,
+      img: String,
       username: String,
       password: String,
       token: String,
@@ -85,7 +86,30 @@ module.exports = class {
         })
       }
     }
-
+    // 修改密码
+    this.updatePassword = function (option) {
+      return new Promise((resolve, reject) => {
+        User.updateOne({ 'username': option.username }, {$set: {'password': option.password}}, function (err, data) {
+          if (err) {
+            reject(new Error({ status: 'failed', msg: '修改失败' }))
+          } else {
+            resolve({ status: 'success', msg: '修改成功' })
+          }
+        })
+      })
+    }
+    // 修改用户头像
+    this.updateImg = function (option) {
+      return new Promise((resolve, reject) => {
+        User.updateOne({ 'username': option.username }, {$set: {'img': option.img}}, function (err, data) {
+          if (err) {
+            reject(new Error({ status: 'failed', msg: '修改失败' }))
+          } else {
+            resolve({ status: 'success', msg: '修改成功' })
+          }
+        })
+      })
+    }
     // 添加好友
     this.addFriend = function (option) {
       return new Promise((resolve, reject) => {

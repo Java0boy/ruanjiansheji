@@ -10,7 +10,6 @@ module.exports = class extends baseController {
       const params = ctx.request.body
       const isFind = await this.DBModule.User.findUser({ username: params.username })
       const re = /^[0-9]*$/
-      const stringRandom = require('string-random')
       if (params.username.length > 16) {
         ctx.body = { status: 401, msg: '该用户名超过了16个字符', data: isFind.data }
       } else if (re.test(params.username)) {
@@ -19,13 +18,21 @@ module.exports = class extends baseController {
         if (isFind.status === 'success' && isFind.data.length > 0) {
           ctx.body = { status: 401, msg: '该用户名已被使用', data: isFind.data }
         } else {
+          // 获取随机id
+          while (1) {
+            var uid = GetRandomNum(10000000, 99999999) + ''
+            const isUsed = await this.DBModule.User.findUser({ id: uid })
+            if (isUsed.status === 'failed' || isUsed.data.length === 0) { break }
+          }
+          var headImg = '<img src="' + `http://${ctx.host}/img/favicon.png` + '">'// 默认头像（可能需要修改）
           const userObj = {
-            id: stringRandom(8, { letters: false }),
+            id: uid,
             username: params.username,
             password: params.password,
             token: '123ds465sxsdfs', // 登录验证token
             friends: [], // 好友
-            status: false // 登录状态
+            status: false, // 登录状态
+            img: headImg
           }
           const result = await this.DBModule.User.saveUser(userObj)
           if (result.status === 'success') {
@@ -147,8 +154,8 @@ module.exports = class extends baseController {
       if (isFindTo.status === 'success') {
         if (isFindTo.data.length > 0) {
           let haveThisApplication = false
-          for (let i = 0; i < isFindTo.data[0].applications.length; i++) {
-            if (isFindTo.data[0].applications[i].username === params.friend) {
+          for (let i = 0; i < isFindTo.data[0].friends.length; i++) {
+            if (isFindTo.data[0].friends[i].username === params.username) {
               haveThisApplication = true
             }
           }
@@ -162,7 +169,7 @@ module.exports = class extends baseController {
               }
             }
             if (haveThisFriend) {
-              ctx.body = {status: 400, msg: '您已添加过该好友'}
+              ctx.body = {status: 400, msg: '您已添加过该好友，请等待对方通过申请'}
             } else {
               const isAddApplic = await this.DBModule.User.addApplic({from: from, to: to})
               if (isAddApplic.status === 'success') {
@@ -201,6 +208,43 @@ module.exports = class extends baseController {
         ctx.body = {status: 500, msg: '噢HO，拒绝申请时出错了'}
       }
     }
+    // 修改密码
+    this.updatePassword = async (ctx, next) => {
+      const params = ctx.request.body
+      const isFind = await this.DBModule.User.findUser({ username: params.username })
+      if (isFind.status === 'success') {
+        if (isFind.data.length > 0) {
+          if (isFind.data[0].password === params.oldPassword) {
+            const isUpdateSuccess = await this.DBModule.User.updatePassword({ username: params.username, password: params.password })
+            if (isUpdateSuccess.status === 'success') {
+              ctx.body = { status: 200, msg: '修改密码成功' }
+            } else {
+              ctx.body = { status: 400, msg: '修改密码失败' }
+            }
+          } else {
+            ctx.body = { status: 401, msg: '旧密码输入错误' }
+          }
+        } else {
+          ctx.body = { status: 401, msg: '用户名不存在' }
+        }
+      } else {
+        ctx.body = { status: 400, msg: '服务器访问数据失败' }
+      }
+    }
+    // 修改用户头像
+    this.updateImg = async (ctx, next) => {
+      const params = ctx.request.body
+      const isUpdateSuccess = await this.DBModule.User.updateImg({username: params.username, img: params.img})
+      if (isUpdateSuccess) {
+        if (isUpdateSuccess.status === 'success') {
+          ctx.body = { status: 200, msg: '修改头像成功' }
+        } else {
+          ctx.body = { status: 400, msg: '修改头像失败' }
+        }
+      } else {
+        ctx.body = { status: 400 }
+      }
+    }
     // 添加消息
     // this.addNewsList = async (ctx, next) => {
     //   const params = ctx.request.body
@@ -223,4 +267,10 @@ module.exports = class extends baseController {
     //   }
     // }
   }
+}
+
+function GetRandomNum (Min, Max) {
+  var Range = Max - Min
+  var Rand = Math.random()
+  return (Min + Math.round(Rand * Range))
 }

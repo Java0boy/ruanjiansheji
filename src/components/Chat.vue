@@ -4,51 +4,52 @@
       <div class="userInfo" v-show="isUserInfo">
         <div style="color: #2b7a78;font-size: 30px;flex: 1.3;margin-top: 30px">个人信息</div>
         <div style="flex: 1;display: flex;flex-flow: revert">
-          <div>用户名</div>
-          <div>{{ curUsername }}</div>
+          <div><span style="color: white;pointer-events: none">重复</span>用户名</div>
+          <div><span style="color: white;pointer-events: none">重复</span>{{ curUsername }}</div>
         </div>
         <div style="flex: 1;display: flex;flex-flow: revert">
-          <div>新头像</div>
-          <img :src="this.curHeadImg" alt="头像">
-          <div class="upLoadImg">
-            <img :src="require('../../static/img/picture.png')" alt="">
-            <input type="file" ref="upLoadImgBtn" @change="updateImg" accept="image/*" />
-          </div>
+          <div><span style="color: white;pointer-events: none">重复密ID</span>ID</div>
+          <div><span style="color: white;pointer-events: none">重复</span>{{ id }}</div>
+        </div>
+        <div style="flex: 2;display: flex;flex-flow: revert">
+          <div><span style="color: white;pointer-events: none">重复用</span>头像</div>
+          <img :src="this.curHeadImg" style="position:absolute;margin-left:100px;height: 70px;width: 70px;background-image: #2b7a78">
+          <div class="btn2" style="position: absolute;margin-left: 190px;margin-top: 20px">新头像</div>
+          <input style="height: 30px;margin-top: -5px;margin-left: 20px;opacity: 0" type="text" name="RUsername" placeholder="用户名" onfocus="this.placeholder=''">
         </div>
         <div style="flex: 1;display: flex;flex-flow: revert">
-          <div><span style="color: white;pointer-events: none">密</span>旧密码</div>
-          <input style="height: 30px;margin-top: -5px;margin-left: 20px" type="password" v-model="oldPassword" placeholder="旧密码" onfocus="this.placeholder=''">
+          <div><span style="color: white;pointer-events: none">重复</span>旧密码</div>
+          <input style="height: 30px;margin-top: -5px;margin-left: 20px" type="password" name="RPassword" v-model="oldPassword" placeholder="密码" onfocus="this.placeholder=''">
         </div>
         <div style="flex: 1;display: flex;flex-flow: revert">
-          <div><span style="color: white;pointer-events: none">密</span>新密码</div>
-          <input style="height: 30px;margin-top: -5px;margin-left: 20px" type="password" v-model="newPassword1" placeholder="新密码" onfocus="this.placeholder=''">
+          <div><span style="color: white;pointer-events: none">重复</span>新密码</div>
+          <input style="height: 30px;margin-top: -5px;margin-left: 20px" type="password" name="RPassword" v-model="newPassword1" placeholder="密码" onfocus="this.placeholder=''">
         </div>
         <div style="flex: 1;display: flex;flex-flow: revert">
-          <div><span style="color: white;pointer-events: none">密</span>再次输入新密码</div>
-          <input style="height: 30px;margin-top: -5px;margin-left: 20px" type="password" v-model="newPassword2" placeholder="新密码" onfocus="this.placeholder=''">
+          <div>重复新密码</div>
+          <input style="height: 30px;margin-top: -5px;margin-left: 20px" type="password" name="RPassword" v-model="newPassword2" placeholder="密码" onfocus="this.placeholder=''">
         </div>
         <div style="flex: 1;display: flex;flex-flow: revert">
-          <div class="btn2" style="margin: 0" @click="updateInformation">修改</div>
-          <div class="btn2" style="margin: 0" @click="isUserInfo = !isUserInfo">取消</div>
+          <div class="btn2" style="margin: 0" @click="updatePassword">确定</div>
+          <div class="btn2" style="margin: 0" @click="isUserInfo = !isUserInfo">关闭</div>
         </div>
       </div>
       <div class="topSide">
         <img :src="this.curHeadImg" alt="头像">
         <p id="me" style="color: white">{{ curUsername }}</p>
-        <p style="color: #def2f1">在线好友人数 【{{ onlineNum }}】</p>
+        <p style="color: #def2f1">在线人数 【{{ onlineNum }}】</p>
         <img :src="require('../../static/img/add.png')" @click="openBar()" class="addFriend" :style="{ transform : 'rotate(' + rotateDeg + 'deg)' }">
         <div class="rightBar" :style="{display: isBar ? 'block' : 'none'}" >
           <div class="rightBarInfo" @click="isUserInfo = !isUserInfo">修改信息</div>
           <div style="margin-left:5%;width: 90%;height: 1px;background-color: white"></div>
           <div class="rightBarInfo" @click="isAdd = !isAdd">添加好友</div>
           <div style="margin-left:5%;width: 90%;height: 1px;background-color: white"></div>
-          <div class="rightBarInfo" @click="offLine">退出登录</div>
+          <div class="rightBarInfo" @click="offLine()">退出登录</div>
         </div>
       </div>
       <div class="leftSide" v-show="isMsg">
           <ul>
             <li v-for="(friend,i) in friends" :key="i" :class="{'activeLi': i === nowChat}" style="border-bottom: 1px solid white" @click="chatWith(i)">
-              <div id="redpoint" class="redPoint"></div>
               <img :src="require('../../static/img/favicon.png')" :alt="friend.username">
               <p>{{ friend.username }}</p>
             </li>
@@ -58,16 +59,16 @@
         <ul>
           <li v-for="(application,i) in applications" :key="i" style="border-bottom: 1px solid white">
             <img :src="require('../../static/img/favicon.png')" :alt="friend.username">
-            <p style="width: 110px;text-overflow: clip">{{ application.username }}</p>
-            <p class="sendBtn" @click="accApplic()">√</p>
+            <p style="width: 110px;text-overflow: clip">{{ applications[i] }}</p>
+            <p class="sendBtn" @click="accApplic(i)">√</p>
             <div style="width: 5px"> </div>
-            <p class="sendBtn" @click="rejApplic()">×</p>
+            <p class="sendBtn" @click="rejApplic(i)">×</p>
           </li>
         </ul>
       </div>
       <div class="leftSide3">
         <div class="btn_msg" @click="isMsg = true;isBold1 = 'bold';isBold2 = 'normal'" :style="{ fontWeight : isBold1}">消息</div>
-        <div class="btn_fri" @click="isMsg = false;isBold2 = 'bold';isBold1 = 'normal'" :style="{ fontWeight : isBold2}">好友列表</div>
+        <div class="btn_fri" @click="isMsg = false;isBold2 = 'bold';isBold1 = 'normal'" :style="{ fontWeight : isBold2}">申请</div>
       </div>
       <div class="rightSide">
         <div id="chatPlace">
@@ -107,7 +108,7 @@
     <div class="add" :style="{display: isAdd ? 'block' : 'none'}">
       <label for="friendName">用户名：</label>
       <input type="text" v-model="friend">
-      <p class="btn2" @click="addFriend">添加</p>
+      <p class="btn2" @click="addApplic">添加</p>
       <p class="btn2" @click="isAdd = !isAdd">关闭</p>
     </div>
   </div>
@@ -132,7 +133,7 @@ export default {
       friends: this.$store.state.friends,
       applications: this.$store.state.applications,
       nowChat: 0,
-      id: '',
+      id: this.$store.state.id,
       onlineNum: 0,
       textmsg: '',
       newMsg: [],
@@ -153,9 +154,15 @@ export default {
         // 修改密码
         this.$axios.post('/updatePassword', {
           username: this.curUsername,
+          oldPassword: this.oldPassword,
           password: this.newPassword1
         }).then(res => {
           console.log(res)
+          if (res.data.status === 200) {
+            alert('修改成功')
+          } else {
+            alert(res.data.msg)
+          }
         }).catch(err => {
           console.log(err)
         })
@@ -199,21 +206,43 @@ export default {
         console.log(err)
       })
     },
-    accApplic () {
+    addApplic () {
+      this.$axios.post('/addApplic', {
+        username: this.curUsername,
+        friend: this.friend
+      }).then(res => {
+        // 最后返回的是申请列表
+        // 建议先把this.friend绑定到vue组件中
+        if (res.data.status === 200) {
+          alert(res.data.msg)
+          this.$store.commit('updateApplications', res.data.data)
+          this.$socket.emit('updateApplications', this.curUsername, this.friend)
+        }
+      }).catch(err => {
+        console.log(err)
+      })
+    },
+    accApplic (i) {
       this.$axios.post('/accApplic', {
         username: this.curUsername,
-        friend: this.application
+        // 现在的问题是怎么获取这个friend参数，也就是对应的申请项的申请人姓名
+        friend: this.applications[i]// this.application
       }).then(res => {
         if (res.data.status === 200) {
-          this.applications = res.data.data
           this.$axios.post('/addFriend', {
             username: this.curUsername,
-            friend: this.application
+            friend: this.applications[i]// this.application
           }).then(res => {
             if (res.data.status === 200) {
+              alert('你们是好友啦，快去消息列表聊天吧')
+              // 这一行是执行store中的index.js下的updateFriends函数，更新username的好友列表
               this.$store.commit('updateFriends', res.data.data)
+              // 这行代码的作用是把username的新好友列表放在前端这里
               this.friends = res.data.data
-              this.$socket.emit('updateFriends', this.curUsername, this.application)
+              // 这一行是去app.js中执行updateFriends函数，然后在app.js中会发送另一个updateFriends函数到chat.vue中，在下面336行左右的位置
+              // 更新friend的好友列表
+              // this.$socket.emit('updateFriends', this.curUsername, this.application)
+              this.$socket.emit('updateFriends', this.curUsername, this.applications[i])
             }
           }).catch(err => {
             console.log(err)
@@ -223,10 +252,10 @@ export default {
         console.log(err)
       })
     },
-    rejApplic () {
+    rejApplic (i) {
       this.$axios.post('/rejApplic', {
         username: this.curUsername,
-        friend: this.friend
+        friend: this.applications[i]
       }).then(res => {
         if (res.data.status === 200) {
           this.applications = res.data.data
@@ -431,13 +460,14 @@ export default {
       this.onlineNum = num
     },
     newMsg: function (data) {
-      this.pushMessage(data.msg, '来自' + data.from + '的信息')
-
+      if (data.from !== this.curUsername) { // 这里要检查一下
+        this.pushMessage(data.msg, '来自' + data.from + '的信息')
+        document.title = '有新消息啦'
+      }
       // console.log('newMsg')
       // console.log(data)
       this.newMsg.push(data)
       this.friends[this.nowChat].textmsg = ''
-      document.title = '有新消息啦'
     },
     updateFriends: function (data) {
       this.friends.push({
@@ -476,7 +506,7 @@ export default {
   .userInfo{
     position: fixed;
     width: 400px;
-    height: 300px;
+    height: 500px;
     background-color: white;
     top: 50%;
     left: 50%;

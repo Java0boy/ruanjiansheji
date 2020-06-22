@@ -9,7 +9,8 @@ export default new Vuex.Store({
     headImg: require('../../static/img/favicon.png'),
     token: null,
     friends: [],
-    applications: []
+    applications: [],
+    id: ''
   },
   mutations: {
     LOGIN_IN (state, data) {
@@ -18,6 +19,7 @@ export default new Vuex.Store({
       state.token = data.token
       state.friends = data.friends
       state.applications = data.applications
+      state.id = data.id
     },
     LOGIN_OUT (state) {
       localStorage.removeItem('token')
@@ -25,6 +27,7 @@ export default new Vuex.Store({
       state.token = ''
       state.friends = []
       state.applications = []
+      state.id = ''
     },
     updateFriends (state, data) {
       state.friends = data
