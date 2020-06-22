@@ -22,7 +22,7 @@ module.exports = class {
           if (err) {
             reject(new Error({status: 'failed', msg: '注册失败，请重试', data: err}))
           } else {
-            resolve({status: 'success', msg: '注册成功，现在去登录吧' + userObj.id, data: data})
+            resolve({status: 'success', msg: '注册成功，现在去登录吧！您的id是：' + userObj.id, data: data})
           }
         })
       })

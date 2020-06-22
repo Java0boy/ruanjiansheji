@@ -5,18 +5,22 @@
         <div style="color: #2b7a78;font-size: 30px;flex: 1.3;margin-top: 30px">个人信息</div>
         <div style="flex: 1;display: flex;flex-flow: revert">
           <div><span style="color: white;pointer-events: none">重复</span>用户名</div>
-          <div><span style="color: white;pointer-events: none">重复</span>{{ curUsername }}</div>
+<!--          <div><span style="color: white;pointer-events: none">重复</span>{{ curUsername }}</div>-->
+          <input style="height: 30px;margin-top: -5px;margin-left: 20px" name="RName" disabled="disabled" v-model="curUsername" placeholder="用户名" onfocus="this.placeholder=''">
+
         </div>
         <div style="flex: 1;display: flex;flex-flow: revert">
           <div><span style="color: white;pointer-events: none">重复密ID</span>ID</div>
-          <div><span style="color: white;pointer-events: none">重复</span>{{ id }}</div>
+<!--          <div><span style="color: white;pointer-events: none">重复</span>{{ id }}</div>-->
+          <input style="height: 30px;margin-top: -5px;margin-left: 20px" name="RID" disabled="disabled" v-model="id" placeholder="ID" onfocus="this.placeholder=''">
         </div>
-        <div style="flex: 2;display: flex;flex-flow: revert">
-          <div><span style="color: white;pointer-events: none">重复用</span>头像</div>
-          <img :src="this.curHeadImg" style="position:absolute;margin-left:100px;height: 70px;width: 70px;background-image: #2b7a78">
-          <div class="btn2" style="position: absolute;margin-left: 190px;margin-top: 20px">新头像</div>
-          <input style="height: 30px;margin-top: -5px;margin-left: 20px;opacity: 0" type="text" name="RUsername" placeholder="用户名" onfocus="this.placeholder=''">
-        </div>
+<!--        头像-->
+<!--        <div style="flex: 2;display: flex;flex-flow: revert">-->
+<!--          <div><span style="color: white;pointer-events: none">重复用</span>头像</div>-->
+<!--          <img :src="this.curHeadImg" style="position:absolute;margin-left:100px;height: 70px;width: 70px;background-image: #2b7a78">-->
+<!--          <div class="btn2" style="position: absolute;margin-left: 190px;margin-top: 20px">新头像</div>-->
+<!--          <input style="height: 30px;margin-top: -5px;margin-left: 20px;opacity: 0" type="text" name="RUsername" placeholder="用户名" onfocus="this.placeholder=''">-->
+<!--        </div>-->
         <div style="flex: 1;display: flex;flex-flow: revert">
           <div><span style="color: white;pointer-events: none">重复</span>旧密码</div>
           <input style="height: 30px;margin-top: -5px;margin-left: 20px" type="password" name="RPassword" v-model="oldPassword" placeholder="密码" onfocus="this.placeholder=''">
@@ -31,6 +35,7 @@
         </div>
         <div style="flex: 1;display: flex;flex-flow: revert">
           <div class="btn2" style="margin: 0" @click="updatePassword">确定</div>
+          <div style="width: 20px;height: 100%"></div>
           <div class="btn2" style="margin: 0" @click="isUserInfo = !isUserInfo">关闭</div>
         </div>
       </div>
@@ -47,6 +52,7 @@
           <div class="rightBarInfo" @click="offLine()">退出登录</div>
         </div>
       </div>
+<!--      消息列表-->
       <div class="leftSide" v-show="isMsg">
           <ul>
             <li v-for="(friend,i) in friends" :key="i" :class="{'activeLi': i === nowChat}" style="border-bottom: 1px solid white" @click="chatWith(i)">
@@ -55,14 +61,16 @@
             </li>
           </ul>
       </div>
+<!--      好友申请列表-->
       <div class="leftSide" v-show="!isMsg">
         <ul>
           <li v-for="(application,i) in applications" :key="i" style="border-bottom: 1px solid white">
             <img :src="require('../../static/img/favicon.png')" :alt="friend.username">
             <p style="width: 110px;text-overflow: clip">{{ applications[i] }}</p>
             <p class="sendBtn" @click="accApplic(i)">√</p>
-            <div style="width: 5px"> </div>
+            <div style="width: 3px"> </div>
             <p class="sendBtn" @click="rejApplic(i)">×</p>
+            <div style="width: 3px"> </div>
           </li>
         </ul>
       </div>
@@ -105,6 +113,7 @@
         <div class="btn2" style="position: absolute;right: 10px;bottom: 10px" @click="send()">发送</div>
       </div>
     </div>
+<!--    添加好友-->
     <div class="add" :style="{display: isAdd ? 'block' : 'none'}">
       <label for="friendName">用户名：</label>
       <input type="text" v-model="friend">
@@ -247,6 +256,7 @@ export default {
           }).catch(err => {
             console.log(err)
           })
+          // this.applications = res.data.data
         }
       }).catch(err => {
         console.log(err)
@@ -511,7 +521,7 @@ export default {
     top: 50%;
     left: 50%;
     margin-left: -200px;
-    margin-top: -100px;
+    margin-top: -250px;
     z-index: 1000;
     border: 1px solid #2b7a78;
     border-radius: 10px;
@@ -529,6 +539,25 @@ export default {
     background-color: red;
     margin-left: 5px;
     margin-top: -15px;
+  }
+  .sendBtn{
+    padding: 5px 5px;
+    border-radius: 3px;
+    background: #2b7a78;
+    color:white;
+    float: right;
+    margin-left: 1px;
+    margin-right: 1px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+  }
+  .sendBtn:hover{
+    background-color: #204846;
+  }
+  .sendBtn:active{
+    background-color: #3aafa9;
   }
   .btn2{
     display: inline-block;
@@ -743,16 +772,7 @@ export default {
   width: calc(100% - 10px);
   height: 100px;
 }
-.sendBtn{
-  padding: 5px 10px;
-  border-radius: 3px;
-  background: #71b0c9;
-  color:white;
-  float: right;
-  margin-right: 5px;
-  margin-top: 10px;
-  cursor: pointer;
-}
+
 img.addFriend{
   height: 30px;
   position: absolute;

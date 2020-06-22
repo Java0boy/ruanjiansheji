@@ -69,9 +69,12 @@ export default {
           username: this.RUsername,
           password: this.RPassword
         }).then(res => {
-          alert(res.data.msg)
+          console.log(this.isLoginPage)
           if (res.data.status === 200) {
+            alert(res.data.msg)
+            // console.log('res == 200')
             this.isLoginPage = !this.isLoginPage
+            this.toLogin()
             this.LUsername = this.RUsername
           } else {
             alert(res.data.msg)
